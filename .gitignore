@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.control.example
+*.local
+open-webui-data/
+pod/template.env
+state/
