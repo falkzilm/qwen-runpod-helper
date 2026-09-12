@@ -5,3 +5,5 @@
 open-webui-data/
 pod/template.env
 state/
+__pycache__/
+*.py[cod]

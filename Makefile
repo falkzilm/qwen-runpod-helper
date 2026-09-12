@@ -1,4 +1,4 @@
-.PHONY: init validate image push start stop status
+.PHONY: init validate test image push start stop status
 
 IMAGE ?= qwen-runpod-helper:local
 
@@ -7,6 +7,9 @@ init:
 
 validate:
 	./scripts/validate-pod.sh
+
+test: validate
+	python3 -m unittest discover -s tests -v
 
 image: validate
 	docker build --platform linux/amd64 -t "$(IMAGE)" .

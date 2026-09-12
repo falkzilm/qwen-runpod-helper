@@ -3,7 +3,8 @@ ARG VLLM_VERSION=0.28.0
 FROM ghcr.io/astral-sh/uv:0.12.12 AS uv
 FROM vllm/vllm-openai:v${VLLM_VERSION}
 
-ARG OPEN_WEBUI_VERSION=0.11.2
+ARG OPEN_WEBUI_VERSION=0.11.3
+ARG SEARXNG_REVISION=61d660276f1288e7d512e8d8da46cb8442728454
 COPY --from=uv /uv /uvx /bin/
 
 LABEL org.opencontainers.image.title="Qwen RunPod Helper" \
@@ -23,14 +24,29 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python \
 RUN uv python install 3.11 && \
     uv venv --python 3.11 /opt/open-webui && \
     uv pip install --python /opt/open-webui/bin/python \
-      --exclude-newer 2026-09-11 \
+      --exclude-newer 2026-09-12 \
       "open-webui==${OPEN_WEBUI_VERSION}" && \
+    mkdir -p /opt/searxng-src && \
+    curl --fail --silent --show-error --location \
+      "https://github.com/searxng/searxng/archive/${SEARXNG_REVISION}.tar.gz" \
+      | tar --extract --gzip --strip-components=1 --directory /opt/searxng-src && \
+    uv venv --python 3.11 /opt/searxng && \
+    uv pip install --python /opt/searxng/bin/python \
+      --exclude-newer 2026-09-12 \
+      pyyaml msgspec typing-extensions pybind11 setuptools wheel granian && \
+    uv pip install --python /opt/searxng/bin/python \
+      --exclude-newer 2026-09-12 --no-build-isolation /opt/searxng-src && \
     uv cache clean
+
+RUN useradd --system --home-dir /nonexistent --shell /usr/sbin/nologin searxng
 
 COPY pod/start.sh /opt/qwen-pod/start.sh
 COPY pod/healthcheck.sh /opt/qwen-pod/healthcheck.sh
+COPY pod/hf_preflight.py /opt/qwen-pod/hf_preflight.py
+COPY pod/searxng-settings.yml /etc/searxng/settings.yml
 COPY pod/nginx.conf /etc/nginx/nginx.conf
-RUN chmod 0755 /opt/qwen-pod/start.sh /opt/qwen-pod/healthcheck.sh
+RUN chmod 0755 /opt/qwen-pod/start.sh /opt/qwen-pod/healthcheck.sh \
+    /opt/qwen-pod/hf_preflight.py
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10m --retries=3 \
