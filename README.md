@@ -341,13 +341,27 @@ ausgeschaltet. Das Image enthält ein vorbereitetes SearXNG, das nur intern auf
 1. Im privaten RunPod-Template `ENABLE_SEARXNG=true` setzen. Der von `make init`
    erzeugte Wert `SEARXNG_SECRET` muss ebenfalls vorhanden sein. Anschließend
    den Pod zu einem passenden Zeitpunkt neu starten.
-2. Bei einer bereits vorhandenen Open-WebUI-Datenbank als Admin **Admin
-   Settings → Web Search** öffnen. Web Search aktivieren, `searxng` auswählen
-   und als Query URL `http://127.0.0.1:8888/search?q=<query>` speichern. Bei
-   einer frischen Datenbank setzt das Startskript diese Werte automatisch.
-3. Im Chat über das Plus-/Tools-Menü die Websuche zulassen und **Function
-   Calling: Native** beibehalten.
-4. Mit einer Frage wie „Suche im Web nach … und nenne die Quellen“ testen.
+2. Bei einer bereits vorhandenen Open-WebUI-Datenbank **Settings → Admin →
+   Tools → Web Search** öffnen und diese Werte speichern:
+
+   | Feld | Wert |
+   |---|---|
+   | Enable Web Search | an |
+   | Web Search Engine | `searxng` |
+   | SearXNG Query URL | `http://127.0.0.1:8888/search?q=<query>` |
+   | Search Result Count | `5` |
+   | Concurrent Requests | `2` |
+
+   Es wird kein SearXNG-API-Key benötigt. `Trust Proxy Environment` bleibt aus,
+   solange im Pod kein ausgehender HTTP-Proxy konfiguriert ist. Bei einer
+   frischen Datenbank setzt das Startskript die zentralen Werte automatisch.
+3. Unter **Settings → Admin → Models** das Qwen-Modell bearbeiten: Capability
+   **Web Search** aktivieren, unter **Default Features** ebenfalls **Web Search**
+   markieren und unter **Advanced Parameters → Function Calling** den Wert
+   **Native** beibehalten. Danach speichern.
+4. Falls Web Search nicht als Default Feature gesetzt wurde, im jeweiligen Chat
+   über das Plus-/Tools-Menü die Websuche einschalten.
+5. Mit einer Frage wie „Suche im Web nach … und nenne die Quellen“ testen.
 
 SearXNG nutzt in dieser Vorlage Brave, DuckDuckGo und Wikipedia, unterstützt die
 für Open WebUI erforderliche JSON-Ausgabe und benötigt keinen externen
