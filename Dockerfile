@@ -4,6 +4,7 @@ FROM ghcr.io/astral-sh/uv:0.12.12 AS uv
 FROM vllm/vllm-openai:v${VLLM_VERSION}
 
 ARG OPEN_WEBUI_VERSION=0.11.3
+ARG OPEN_WEBUI_TORCH_VERSION=2.8.0+cpu
 ARG SEARXNG_REVISION=61d660276f1288e7d512e8d8da46cb8442728454
 COPY --from=uv /uv /uvx /bin/
 
@@ -23,6 +24,11 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python \
     UV_LINK_MODE=copy
 RUN uv python install 3.11 && \
     uv venv --python 3.11 /opt/open-webui && \
+    uv pip install --python /opt/open-webui/bin/python \
+      --exclude-newer 2026-09-12 \
+      --extra-index-url https://download.pytorch.org/whl/cpu \
+      --index-strategy unsafe-best-match \
+      "torch==${OPEN_WEBUI_TORCH_VERSION}" && \
     uv pip install --python /opt/open-webui/bin/python \
       --exclude-newer 2026-09-12 \
       "open-webui==${OPEN_WEBUI_VERSION}" && \

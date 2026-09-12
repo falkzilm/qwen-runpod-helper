@@ -53,7 +53,7 @@ Für RunPod wird kein lokaler Docker-Build benötigt. Verwende im privaten
 RunPod-Template das versionierte Image:
 
 ```text
-ghcr.io/falkzilm/qwen-runpod-helper:0.1.1
+ghcr.io/falkzilm/qwen-runpod-helper:0.1.2
 ```
 
 Release-Tags sind reproduzierbarer als `latest`. Noch strenger ist ein in GHCR
@@ -157,7 +157,7 @@ ohne den Token auszugeben. Im Pod lässt sich dieselbe Prüfung manuell ausführ
 Trage in RunPod direkt Folgendes ein:
 
 ```text
-ghcr.io/falkzilm/qwen-runpod-helper:0.1.1
+ghcr.io/falkzilm/qwen-runpod-helper:0.1.2
 ```
 
 Das Image enthält die Laufzeit, aber weder Modellgewichte noch Secrets. Das
@@ -219,7 +219,7 @@ Unter **Templates → New Template**:
 | Einstellung | Wert |
 |---|---|
 | Template visibility | Private |
-| Container Image | `ghcr.io/falkzilm/qwen-runpod-helper:0.1.1` oder eigener Tag |
+| Container Image | `ghcr.io/falkzilm/qwen-runpod-helper:0.1.2` oder eigener Tag |
 | Container Disk | 80 GB |
 | Volume Disk | 10 GB |
 | Volume Mount Path | `/workspace` |
@@ -468,6 +468,28 @@ konsistenten SQLite-Backupmechanismus verwenden. Kritische Daten zusätzlich
 außerhalb von RunPod aufbewahren.
 
 ## Fehlerdiagnose
+
+### Pod bleibt bei `Downloading` stehen
+
+`Downloading` erscheint, bevor der Container und damit auch das Startskript
+laufen. Deshalb gibt es in diesem Zustand noch keine vLLM- oder Open-WebUI-Logs.
+
+Image `0.1.1` ist nicht zur weiteren Verwendung empfohlen: Open WebUI zog dort
+in seinem isolierten Python-Environment versehentlich ein zweites vollständiges
+CUDA/PyTorch-Paketset ein. Das Image enthält dadurch einen einzelnen rund 7 GB
+großen komprimierten Layer und insgesamt etwa 15 GB komprimierte Daten. Ab
+`0.1.2` verwendet Open WebUI CPU-only PyTorch; vLLM und die Modellinferenz nutzen
+weiterhin unverändert die GPU.
+
+Für einen neuen Pod:
+
+1. Image `ghcr.io/falkzilm/qwen-runpod-helper:0.1.2` auswählen.
+2. Mindestens 80 GB **Container Disk** einstellen. Die Volume Disk unter
+   `/workspace` ist davon getrennt und hilft beim Entpacken des Images nicht.
+3. Einen Pod, der noch `0.1.1` herunterlädt, beenden; er kann dieses Image nicht
+   im laufenden Download auf `0.1.2` wechseln.
+4. Erst nach erfolgreichem Image-Pull beginnen die normalen Container-Logs und
+   der Modell-Download nach `/workspace/huggingface`.
 
 ### Die Proxy-URL zeigt 502 oder „Bad Gateway“
 

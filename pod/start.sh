@@ -50,7 +50,7 @@ export ENABLE_SUBAGENTS=false
 export AIOHTTP_CLIENT_ALLOW_REDIRECTS=false
 export JWT_EXPIRES_IN="${JWT_EXPIRES_IN:-7d}"
 export UVICORN_WORKERS=1
-export USER_AGENT="${USER_AGENT:-qwen-runpod-helper/0.1.1 (+https://github.com/falkzilm/qwen-runpod-helper)}"
+export USER_AGENT="${USER_AGENT:-qwen-runpod-helper/0.1.2 (+https://github.com/falkzilm/qwen-runpod-helper)}"
 
 enable_searxng="${ENABLE_SEARXNG:-false}"
 searxng_pid=""

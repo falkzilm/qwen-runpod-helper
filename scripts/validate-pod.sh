@@ -7,8 +7,10 @@ bash -n "${project_dir}"/pod/*.sh "${project_dir}"/scripts/*.sh
 
 if ! grep -Eq '^  bind_address: 127\.0\.0\.1$' "${project_dir}/pod/searxng-settings.yml" ||
   ! grep -Eq '^    - json$' "${project_dir}/pod/searxng-settings.yml" ||
+  ! grep -Fq 'https://download.pytorch.org/whl/cpu' "${project_dir}/Dockerfile" ||
+  ! grep -Fq 'OPEN_WEBUI_TORCH_VERSION=2.8.0+cpu' "${project_dir}/Dockerfile" ||
   grep -Eq '(^|[[:space:]])--api-key([[:space:]]|$)' "${project_dir}/pod/start.sh"; then
-  printf 'Fehler: SearXNG-Bindung/JSON oder vLLM-Key-Uebergabe ist unsicher.\n' >&2
+  printf 'Fehler: SearXNG-, Open-WebUI-Torch- oder vLLM-Key-Invariante verletzt.\n' >&2
   exit 1
 fi
 
