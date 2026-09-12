@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 ARG VLLM_VERSION=0.28.0
-FROM ghcr.io/astral-sh/uv:0.12.12 AS uv
+FROM ghcr.io/astral-sh/uv:0.12.13 AS uv
 FROM vllm/vllm-openai:v${VLLM_VERSION}
 
 ARG OPEN_WEBUI_VERSION=0.11.3
