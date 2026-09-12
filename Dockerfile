@@ -29,8 +29,9 @@ RUN uv python install 3.11 && \
     mkdir -p /opt/searxng-src && \
     curl --fail --silent --show-error --location \
       "https://github.com/searxng/searxng/archive/${SEARXNG_REVISION}.tar.gz" \
-      | tar --extract --gzip --strip-components=1 --directory /opt/searxng-src && \
-    uv venv --python 3.11 /opt/searxng && \
+      | tar --extract --gzip --strip-components=1 --directory /opt/searxng-src
+COPY pod/searxng-version_frozen.py /opt/searxng-src/searx/version_frozen.py
+RUN uv venv --python 3.11 /opt/searxng && \
     uv pip install --python /opt/searxng/bin/python \
       --exclude-newer 2026-09-12 \
       pyyaml msgspec typing-extensions pybind11 setuptools wheel granian && \
