@@ -101,20 +101,23 @@ fi
 if [[ "${enable_searxng}" == "true" ]]; then
   (
     cd /opt/searxng-src
-    exec runuser --user searxng -- env -i \
-      PATH=/opt/searxng/bin:/usr/bin:/bin \
-      LANG=C.UTF-8 \
-      SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml \
-      SEARXNG_SECRET="${searxng_secret}" \
-      GRANIAN_INTERFACE=wsgi \
-      GRANIAN_HOST=127.0.0.1 \
-      GRANIAN_PORT=8888 \
-      GRANIAN_WEBSOCKETS=false \
-      GRANIAN_WORKERS=1 \
-      GRANIAN_BLOCKING_THREADS=4 \
-      /opt/searxng/bin/granian searx.webapp:app
+    for inherited_name in $(compgen -e); do
+      unset "${inherited_name}"
+    done
+    export PATH=/opt/searxng/bin:/usr/bin:/bin
+    export LANG=C.UTF-8
+    export SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
+    export SEARXNG_SECRET="${searxng_secret}"
+    export GRANIAN_INTERFACE=wsgi
+    export GRANIAN_HOST=127.0.0.1
+    export GRANIAN_PORT=8888
+    export GRANIAN_WEBSOCKETS=false
+    export GRANIAN_WORKERS=1
+    export GRANIAN_BLOCKING_THREADS=4
+    exec /usr/sbin/runuser --user searxng -- /opt/searxng/bin/granian searx.webapp:app
   ) &
   searxng_pid=$!
+  searxng_secret=""
 
   searxng_ready=false
   for _ in $(seq 1 30); do
