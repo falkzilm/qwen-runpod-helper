@@ -44,8 +44,10 @@ Für RunPod im Endpoint folgende Schritte wählen:
 3. In den Environment Variables die Werte aus
    [serverless/template.env.example](serverless/template.env.example) übernehmen,
    einschließlich des privaten `HF_TOKEN` für das gated Modell.
-4. Im Endpoint `HEALTH_CHECK_PATH=/health` konfigurieren. RunPod authentifiziert
-   öffentliche Requests mit eurem RunPod-API-Key; deshalb dort kein
+4. Als HTTP-Port **80** exponieren; RunPod setzt für Load-Balancer-Worker
+   standardmäßig `PORT=80`. Im Endpoint `HEALTH_CHECK_PATH=/health`
+   konfigurieren. RunPod authentifiziert öffentliche Requests mit eurem
+   RunPod-API-Key; deshalb dort kein
    `VLLM_API_KEY` setzen.
 5. Das Hugging-Face-Modell im RunPod-Endpoint als Cached Model auswählen. Das
    verkürzt Cold Starts und vermeidet Worker-Kosten beim Download.

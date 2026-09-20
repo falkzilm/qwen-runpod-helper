@@ -15,7 +15,7 @@ require_var MODEL_NAME
 # the RunPod API key. VLLM_API_KEY is deliberately opt-in so it can protect the
 # local worker without rejecting RunPod-authenticated requests. vLLM reads this
 # official environment variable itself, avoiding an API key in the process list.
-port="${PORT:-8000}"
+port="${PORT:-80}"
 vllm_args=(
   serve "${MODEL_NAME}"
   --host 0.0.0.0

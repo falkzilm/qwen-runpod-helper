@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.title="Qwen RunPod Serverless Worker" \
 COPY serverless/start.sh /opt/qwen-serverless/start.sh
 RUN chmod 0755 /opt/qwen-serverless/start.sh
 
-# RunPod injects PORT for load-balancing endpoints. Locally the compose stack
-# uses the same port, so the image behaves identically in both environments.
-EXPOSE 8000
+# RunPod Load Balancer workers use port 80 by default. The local Compose stack
+# explicitly overrides PORT to 8000, avoiding a privileged host port locally.
+EXPOSE 80
 ENTRYPOINT ["/opt/qwen-serverless/start.sh"]
