@@ -1,4 +1,4 @@
-.PHONY: init local-init validate test image serverless-image push start stop status local-up local-ui-up local-down local-logs cli-test
+.PHONY: init local-init validate test image serverless-image push start stop status local-up local-ui-up local-down local-logs warmup cli-test
 
 IMAGE ?= qwen-runpod-helper:local
 
@@ -43,6 +43,9 @@ local-down:
 
 local-logs:
 	docker compose --env-file local/compose.env logs --follow
+
+warmup:
+	./scripts/test-openai-api.sh --wait
 
 cli-test:
 	./scripts/test-openai-api.sh

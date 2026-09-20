@@ -118,6 +118,22 @@ Weg über `/v1/models` und `/v1/chat/completions`:
 make cli-test
 ```
 
+Bei einem Serverless-Cold-Start löst der erste Aufruf automatisch das
+Hochfahren aus. `make cli-test` wartet anschließend bis vLLM auf
+`/v1/models` antwortet, statt nach einem einzelnen kurzen Request
+abzubrechen. Soll nur vor dem Arbeiten aufgeweckt werden, ohne eine Chat-
+Completion auszuführen:
+
+```bash
+make warmup
+```
+
+Die Wartezeit ist mit `RUNPOD_COLD_START_TIMEOUT=900` und das
+Prüfintervall mit `RUNPOD_READINESS_INTERVAL=10` in `local/compose.env`
+konfigurierbar. Ein Warmup hält den Worker nicht selbst dauerhaft aktiv;
+der in RunPod konfigurierte Idle-Timeout bestimmt weiterhin, wann er wieder
+entladen wird.
+
 Logs und Aufräumen:
 
 ```bash

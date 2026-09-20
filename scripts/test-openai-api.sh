@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+wait_only=false
+case "${1:-}" in
+  '') ;;
+  --wait) wait_only=true ;;
+  *)
+    printf 'Aufruf: %s [--wait]\n' "$0" >&2
+    exit 64
+    ;;
+esac
+
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 config_file="${LOCAL_CONFIG_FILE:-${project_dir}/local/compose.env}"
 
@@ -46,8 +56,38 @@ chmod 600 "${curl_config}"
 trap 'rm -f "${curl_config}"' EXIT
 printf 'header = "Authorization: Bearer %s"\n' "${api_key}" > "${curl_config}"
 
-curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15 --max-time 90 \
-  "${base_url}/models" >/dev/null
+if [[ "${INFERENCE_MODE:-serverless}" == "serverless" ]]; then
+  readiness_timeout="${RUNPOD_COLD_START_TIMEOUT:-900}"
+  readiness_interval="${RUNPOD_READINESS_INTERVAL:-10}"
+else
+  readiness_timeout="${LOCAL_START_TIMEOUT:-90}"
+  readiness_interval="${LOCAL_READINESS_INTERVAL:-3}"
+fi
+
+if ! [[ "${readiness_timeout}" =~ ^[1-9][0-9]*$ ]] || ! [[ "${readiness_interval}" =~ ^[1-9][0-9]*$ ]]; then
+  printf 'Fehler: Die Readiness-Zeitwerte muessen positive ganze Sekunden sein.\n' >&2
+  exit 64
+fi
+
+printf 'Wecke %s-Worker und warte bis die OpenAI-API bereit ist (maximal %ss).\n' \
+  "${INFERENCE_MODE:-serverless}" "${readiness_timeout}"
+deadline=$((SECONDS + readiness_timeout))
+while ! curl --config "${curl_config}" --fail --silent --connect-timeout 15 --max-time 30 \
+  "${base_url}/models" >/dev/null; do
+  if (( SECONDS >= deadline )); then
+    printf 'Fehler: API nach %ss noch nicht bereit. Worker-Logs und Serverless-Queue pruefen.\n' \
+      "${readiness_timeout}" >&2
+    exit 1
+  fi
+  printf 'Worker startet noch; erneuter Bereitschaftstest in %ss ...\n' "${readiness_interval}"
+  sleep "${readiness_interval}"
+done
+printf 'OpenAI-API ist bereit.\n'
+
+if [[ "${wait_only}" == true ]]; then
+  exit 0
+fi
+
 curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15 --max-time 360 \
   "${base_url}/chat/completions" \
   -H 'Content-Type: application/json' \
