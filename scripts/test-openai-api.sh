@@ -41,10 +41,15 @@ case "${INFERENCE_MODE:-serverless}" in
 esac
 
 model="${SERVED_MODEL_NAME:-qwen3.8-27b-uncensored}"
-curl --fail --silent --show-error --connect-timeout 15 --max-time 90 "${base_url}/models" \
-  -H "Authorization: Bearer ${api_key}" >/dev/null
-curl --fail --silent --show-error --connect-timeout 15 --max-time 360 "${base_url}/chat/completions" \
-  -H "Authorization: Bearer ${api_key}" \
+curl_config="$(mktemp)"
+chmod 600 "${curl_config}"
+trap 'rm -f "${curl_config}"' EXIT
+printf 'header = "Authorization: Bearer %s"\n' "${api_key}" > "${curl_config}"
+
+curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15 --max-time 90 \
+  "${base_url}/models" >/dev/null
+curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15 --max-time 360 \
+  "${base_url}/chat/completions" \
   -H 'Content-Type: application/json' \
   --data "{\"model\":\"${model}\",\"messages\":[{\"role\":\"user\",\"content\":\"Antworte nur mit: bereit\"}],\"stream\":false,\"max_tokens\":32}"
 printf '\nOpenAI-kompatibler CLI-Test war erfolgreich (%s).\n' "${INFERENCE_MODE:-serverless}"
