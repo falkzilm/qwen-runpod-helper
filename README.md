@@ -82,7 +82,9 @@ direkt in den Passwortmanager übernehmen; Anmeldung erfolgt danach mit
 `admin@example.invalid`.
 
 Danach für den Serverless-Test `INFERENCE_MODE=serverless`,
-`RUNPOD_ENDPOINT_ID` und `RUNPOD_API_KEY` in `local/compose.env` setzen und
+`RUNPOD_ENDPOINT_ID` und `RUNPOD_API_KEY` in `local/compose.env` setzen. Bei
+`RUNPOD_ENDPOINT_ID` funktioniert entweder nur die ID oder die vollständige
+Endpoint-URL. Anschließend die lokale UI starten:
 die lokale UI starten:
 
 ```bash

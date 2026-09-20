@@ -23,10 +23,14 @@ case "${INFERENCE_MODE:-serverless}" in
   serverless)
     : "${RUNPOD_API_KEY:?RUNPOD_API_KEY fehlt}"
     if [[ -n "${RUNPOD_API_BASE_URL:-}" ]]; then
-      base_url="${RUNPOD_API_BASE_URL%/}/v1"
+      base_url="${RUNPOD_API_BASE_URL%/}"
     else
       : "${RUNPOD_ENDPOINT_ID:?RUNPOD_ENDPOINT_ID fehlt}"
-      base_url="https://${RUNPOD_ENDPOINT_ID}.api.runpod.ai/v1"
+      case "${RUNPOD_ENDPOINT_ID}" in
+        http://*|https://*) base_url="${RUNPOD_ENDPOINT_ID%/}" ;;
+        *) base_url="https://${RUNPOD_ENDPOINT_ID}.api.runpod.ai" ;;
+      esac
+      [[ "${base_url}" == */v1 ]] || base_url="${base_url}/v1"
     fi
     api_key="${RUNPOD_API_KEY}"
     ;;
@@ -37,9 +41,9 @@ case "${INFERENCE_MODE:-serverless}" in
 esac
 
 model="${SERVED_MODEL_NAME:-qwen3.8-27b-uncensored}"
-curl --fail --silent --show-error "${base_url}/models" \
+curl --fail --silent --show-error --connect-timeout 15 --max-time 90 "${base_url}/models" \
   -H "Authorization: Bearer ${api_key}" >/dev/null
-curl --fail --silent --show-error "${base_url}/chat/completions" \
+curl --fail --silent --show-error --connect-timeout 15 --max-time 360 "${base_url}/chat/completions" \
   -H "Authorization: Bearer ${api_key}" \
   -H 'Content-Type: application/json' \
   --data "{\"model\":\"${model}\",\"messages\":[{\"role\":\"user\",\"content\":\"Antworte nur mit: bereit\"}],\"stream\":false,\"max_tokens\":32}"
