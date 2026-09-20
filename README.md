@@ -106,10 +106,12 @@ Compose-Netz. Für den vollständig lokalen Worker `INFERENCE_MODE=local` sowie
 make local-up
 ```
 
-Für verlässliche allgemeine Websuche in SearXNG einen Brave Search API Key als
-`BRAVE_SEARCH_API_KEY` in `local/compose.env` setzen und `make local-ui-up`
-erneut ausführen. Ohne Key nutzt der lokale Stack Wikipedia als robuste Quelle;
-die fragilen öffentlichen Brave- und DuckDuckGo-Scraper bleiben bewusst aus.
+Der lokale Stack nutzt kostenlos Wikipedia, Bing, Qwant, Yahoo, Mwmbl, Yep und
+YaCy. SearXNG fragt sie parallel ab: blockiert eine Quelle die
+Container-IP, erscheinen weiterhin Treffer der anderen. Die fragilen
+öffentlichen Brave- und DuckDuckGo-Scraper bleiben aus. Optional kann ein
+Brave Search API Key als `BRAVE_SEARCH_API_KEY` in `local/compose.env` gesetzt
+und der Stack mit `make local-ui-up` neu gestartet werden.
 
 In beiden Modi prüft derselbe CLI-Test den tatsächlichen OpenAI-kompatiblen
 Weg über `/v1/models` und `/v1/chat/completions`:

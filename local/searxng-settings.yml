@@ -2,6 +2,12 @@ use_default_settings:
   engines:
     keep_only:
       - wikipedia
+      - bing
+      - qwant
+      - yahoo
+      - mwmbl
+      - yep
+      - yacy
 
 general:
   instance_name: Qwen Local Search
@@ -23,11 +29,26 @@ outgoing:
   request_timeout: 10.0
   max_request_timeout: 20.0
 
-# The public HTML search pages used by the standard Brave and DuckDuckGo
-# engines are intentionally excluded: container IP ranges are regularly
-# challenged or rate-limited. The entrypoint enables this official API engine
-# only when BRAVE_SEARCH_API_KEY is set in local/compose.env.
+# The standard Brave and DuckDuckGo HTML engines are excluded because container
+# IP ranges are regularly challenged or rate-limited. The remaining free
+# engines are queried in parallel: a block from one engine leaves results from
+# the others intact. The entrypoint enables this official API engine only when
+# BRAVE_SEARCH_API_KEY is set in local/compose.env.
 engines:
+  # These are disabled in SearXNG's default public-instance configuration.
+  # Explicitly enable them for this private, local-only instance.
+  - name: bing
+    disabled: false
+  - name: qwant
+    disabled: false
+  - name: yahoo
+    disabled: false
+  - name: mwmbl
+    disabled: false
+  - name: yep
+    disabled: false
+  - name: yacy
+    disabled: false
   - name: brave api
     engine: braveapi
     categories: [general, web]
