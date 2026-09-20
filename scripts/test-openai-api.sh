@@ -51,5 +51,5 @@ curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15
 curl --config "${curl_config}" --fail --silent --show-error --connect-timeout 15 --max-time 360 \
   "${base_url}/chat/completions" \
   -H 'Content-Type: application/json' \
-  --data "{\"model\":\"${model}\",\"messages\":[{\"role\":\"user\",\"content\":\"Antworte nur mit: bereit\"}],\"stream\":false,\"max_tokens\":32}"
+  --data "{\"model\":\"${model}\",\"messages\":[{\"role\":\"user\",\"content\":\"Antworte nur mit: bereit\"}],\"stream\":false,\"max_tokens\":32,\"chat_template_kwargs\":{\"enable_thinking\":false}}"
 printf '\nOpenAI-kompatibler CLI-Test war erfolgreich (%s).\n' "${INFERENCE_MODE:-serverless}"
