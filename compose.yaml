@@ -40,11 +40,14 @@ services:
 
   searxng:
     image: searxng/searxng:latest
+    entrypoint: ["/bin/sh", "/opt/local/searxng-entrypoint.sh"]
     environment:
       SEARXNG_BASE_URL: http://localhost:${OPEN_WEBUI_PORT:-3000}/
       SEARXNG_SECRET: ${SEARXNG_SECRET:-change-me}
+      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
     volumes:
-      - ./local/searxng-settings.yml:/etc/searxng/settings.yml:ro
+      - ./local/searxng-settings.yml:/opt/local/searxng-settings.yml:ro
+      - ./local/searxng-entrypoint.sh:/opt/local/searxng-entrypoint.sh:ro
 
   worker:
     build:

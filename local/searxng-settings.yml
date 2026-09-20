@@ -1,8 +1,6 @@
 use_default_settings:
   engines:
     keep_only:
-      - brave
-      - duckduckgo
       - wikipedia
 
 general:
@@ -24,3 +22,16 @@ server:
 outgoing:
   request_timeout: 10.0
   max_request_timeout: 20.0
+
+# The public HTML search pages used by the standard Brave and DuckDuckGo
+# engines are intentionally excluded: container IP ranges are regularly
+# challenged or rate-limited. The entrypoint enables this official API engine
+# only when BRAVE_SEARCH_API_KEY is set in local/compose.env.
+engines:
+  - name: brave api
+    engine: braveapi
+    categories: [general, web]
+    shortcut: bapi
+    inactive: __BRAVE_API_INACTIVE__
+    api_key: "__BRAVE_SEARCH_API_KEY__"
+    results_per_page: 10
