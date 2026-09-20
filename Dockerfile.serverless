@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1.7
+ARG VLLM_VERSION=0.28.0
+FROM vllm/vllm-openai:v${VLLM_VERSION}
+
+LABEL org.opencontainers.image.title="Qwen RunPod Serverless Worker" \
+      org.opencontainers.image.description="OpenAI-compatible vLLM worker for RunPod Serverless load-balancing endpoints" \
+      org.opencontainers.image.licenses="MIT"
+
+COPY serverless/start.sh /opt/qwen-serverless/start.sh
+RUN chmod 0755 /opt/qwen-serverless/start.sh
+
+# RunPod injects PORT for load-balancing endpoints. Locally the compose stack
+# uses the same port, so the image behaves identically in both environments.
+EXPOSE 8000
+ENTRYPOINT ["/opt/qwen-serverless/start.sh"]

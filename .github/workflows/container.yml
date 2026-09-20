@@ -25,9 +25,23 @@ env:
 
 jobs:
   build:
-    name: Build linux/amd64 image
+    name: Build ${{ matrix.name }} linux/amd64 image
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: pod
+            dockerfile: ./Dockerfile
+            suffix: ""
+            title: Qwen RunPod Helper
+            description: Secure single-Pod vLLM and Open WebUI runtime for RunPod
+          - name: serverless
+            dockerfile: ./Dockerfile.serverless
+            suffix: -serverless
+            title: Qwen RunPod Serverless Worker
+            description: OpenAI-compatible vLLM worker for RunPod Serverless
 
     steps:
       - name: Check out repository
@@ -51,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ matrix.suffix }}
           flavor: |
             latest=auto
           tags: |
@@ -60,8 +74,8 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
           labels: |
-            org.opencontainers.image.title=Qwen RunPod Helper
-            org.opencontainers.image.description=Secure single-Pod vLLM and Open WebUI runtime for RunPod
+            org.opencontainers.image.title=${{ matrix.title }}
+            org.opencontainers.image.description=${{ matrix.description }}
             org.opencontainers.image.licenses=MIT
 
       - name: Build and publish image
@@ -69,7 +83,7 @@ jobs:
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
-          file: ./Dockerfile
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}

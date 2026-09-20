@@ -13,6 +13,100 @@ verwendet werden, während Modell, Kontextgröße und GPU-Profil über
 Umgebungsvariablen austauschbar bleiben. Pull Requests und nachvollziehbare
 Modellprofile sind willkommen.
 
+## Serverless-vLLM und lokale Open WebUI
+
+Neben dem bestehenden Pod-Image enthält das Repository nun einen getrennten
+Serverless-Worker. Er enthält ausschließlich vLLM, bietet direkt die
+OpenAI-kompatiblen Routen `/v1/models`, `/v1/completions` und
+`/v1/chat/completions` an und ist für einen RunPod-Endpoint vom Typ
+**Load Balancer** gedacht. Open WebUI, Nginx und SearXNG gehören absichtlich
+nicht in dieses Image.
+
+Damit lassen sich UI und Inferenz unabhängig betreiben:
+
+```text
+selbst gehostetes Open WebUI ─┐
+Claude Code / Router          ├─ RunPod Serverless Load Balancer ─ vLLM
+CLI-Smoke-Test                ┘
+```
+
+Das Pod-Image und seine Konfiguration bleiben unverändert. Das Serverless-Image
+wird als eigenes GHCR-Paket veröffentlicht:
+
+```text
+ghcr.io/falkzilm/qwen-runpod-helper-serverless:edge
+```
+
+Für RunPod im Endpoint folgende Schritte wählen:
+
+1. **Import from Docker Registry** und das Serverless-Image auswählen.
+2. Als Endpoint-Typ **Load Balancer** auswählen.
+3. In den Environment Variables die Werte aus
+   [serverless/template.env.example](serverless/template.env.example) übernehmen,
+   einschließlich des privaten `HF_TOKEN` für das gated Modell.
+4. Im Endpoint `HEALTH_CHECK_PATH=/health` konfigurieren. RunPod authentifiziert
+   öffentliche Requests mit eurem RunPod-API-Key; deshalb dort kein
+   `VLLM_API_KEY` setzen.
+5. Das Hugging-Face-Modell im RunPod-Endpoint als Cached Model auswählen. Das
+   verkürzt Cold Starts und vermeidet Worker-Kosten beim Download.
+
+Der Serverless-Endpoint ist dann unter folgendem Muster ein OpenAI-kompatibler
+Provider für Router und Agenten:
+
+```text
+https://ENDPOINT_ID.api.runpod.ai/v1
+```
+
+Eine passende Client-Vorlage liegt unter
+[clients/serverless-openai.env.example](clients/serverless-openai.env.example).
+
+### Lokale Oberfläche und Umschalter
+
+`compose.yaml` startet Open WebUI und SearXNG lokal. Mit `INFERENCE_MODE` in
+der privaten Datei `local/compose.env` wird die Inferenzquelle gewählt:
+
+| Wert | Open WebUI verbindet sich mit | Zusätzlicher Start |
+|---|---|---|
+| `serverless` | `https://ENDPOINT_ID.api.runpod.ai/v1` | keiner |
+| `local` | demselben lokalen Serverless-vLLM-Image auf `worker:8000/v1` | GPU-Worker-Profil |
+
+Einmalig die private Konfiguration und Schlüssel erzeugen:
+
+```bash
+make local-init
+chmod 600 local/compose.env
+```
+
+Danach für den Serverless-Test `INFERENCE_MODE=serverless`,
+`RUNPOD_ENDPOINT_ID` und `RUNPOD_API_KEY` in `local/compose.env` setzen und
+die lokale UI starten:
+
+```bash
+make local-ui-up
+```
+
+Open WebUI läuft dann auf `http://localhost:3000`; SearXNG bleibt im internen
+Compose-Netz. Für den vollständig lokalen Worker `INFERENCE_MODE=local` sowie
+`HF_TOKEN` setzen und mit einer lokalen NVIDIA-GPU starten:
+
+```bash
+make local-up
+```
+
+In beiden Modi prüft derselbe CLI-Test den tatsächlichen OpenAI-kompatiblen
+Weg über `/v1/models` und `/v1/chat/completions`:
+
+```bash
+make cli-test
+```
+
+Logs und Aufräumen:
+
+```bash
+make local-logs
+make local-down
+```
+
 ```text
 Browser / OpenCode / Cline
           │ HTTPS + WebUI-Login bzw. eigener API-Key

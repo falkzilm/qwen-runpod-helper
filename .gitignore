@@ -4,6 +4,7 @@
 *.local
 open-webui-data/
 pod/template.env
+local/compose.env
 state/
 __pycache__/
 *.py[cod]

@@ -1,0 +1,76 @@
+name: qwen-local
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-0.11.3}
+    entrypoint: ["/bin/sh", "/opt/local/open-webui-entrypoint.sh"]
+    environment:
+      INFERENCE_MODE: ${INFERENCE_MODE:-serverless}
+      LOCAL_VLLM_BASE_URL: ${LOCAL_VLLM_BASE_URL:-http://worker:8000/v1}
+      LOCAL_VLLM_API_KEY: ${LOCAL_VLLM_API_KEY:-}
+      RUNPOD_ENDPOINT_ID: ${RUNPOD_ENDPOINT_ID:-}
+      RUNPOD_API_KEY: ${RUNPOD_API_KEY:-}
+      RUNPOD_API_BASE_URL: ${RUNPOD_API_BASE_URL:-}
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-}
+      WEBUI_AUTH: "true"
+      ENABLE_SIGNUP: "false"
+      ENABLE_OLLAMA_API: "false"
+      ENABLE_OPENAI_API: "true"
+      ENABLE_WEB_SEARCH: ${ENABLE_WEB_SEARCH:-true}
+      WEB_SEARCH_ENGINE: searxng
+      SEARXNG_QUERY_URL: http://searxng:8080/search?q=<query>
+      SEARXNG_LANGUAGE: ${SEARXNG_LANGUAGE:-de-DE}
+      WEB_SEARCH_RESULT_COUNT: ${WEB_SEARCH_RESULT_COUNT:-5}
+    volumes:
+      - open-webui-data:/app/backend/data
+      - ./local/open-webui-entrypoint.sh:/opt/local/open-webui-entrypoint.sh:ro
+    ports:
+      - "${OPEN_WEBUI_PORT:-3000}:8080"
+    depends_on:
+      searxng:
+        condition: service_started
+
+  searxng:
+    image: searxng/searxng:latest
+    environment:
+      SEARXNG_BASE_URL: http://localhost:${OPEN_WEBUI_PORT:-3000}/
+      SEARXNG_SECRET: ${SEARXNG_SECRET:-change-me}
+    volumes:
+      - ./local/searxng-settings.yml:/etc/searxng/settings.yml:ro
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.serverless
+    image: qwen-runpod-serverless:local
+    profiles: ["local-worker"]
+    environment:
+      MODEL_NAME: ${MODEL_NAME:-orcarouter/Qwen3.8-27B-Uncensored-FP8}
+      SERVED_MODEL_NAME: ${SERVED_MODEL_NAME:-qwen3.8-27b-uncensored}
+      MAX_MODEL_LEN: ${MAX_MODEL_LEN:-131072}
+      MAX_NUM_SEQS: ${MAX_NUM_SEQS:-4}
+      GPU_MEMORY_UTILIZATION: ${GPU_MEMORY_UTILIZATION:-0.90}
+      KV_CACHE_DTYPE: ${KV_CACHE_DTYPE:-fp8}
+      TENSOR_PARALLEL_SIZE: ${TENSOR_PARALLEL_SIZE:-1}
+      TRUST_REMOTE_CODE: ${TRUST_REMOTE_CODE:-true}
+      SPECULATIVE_CONFIG: ${SPECULATIVE_CONFIG:-}
+      REASONING_PARSER: ${REASONING_PARSER:-qwen3}
+      TOOL_CALL_PARSER: ${TOOL_CALL_PARSER:-qwen3_coder}
+      HF_TOKEN: ${HF_TOKEN:-}
+      VLLM_API_KEY: ${LOCAL_VLLM_API_KEY:-}
+      PORT: "8000"
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    gpus: all
+    ports:
+      - "${LOCAL_VLLM_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os; from urllib.request import Request, urlopen; urlopen(Request('http://127.0.0.1:8000/health', headers={'Authorization': 'Bearer ' + os.environ['VLLM_API_KEY']}), timeout=4)\""]
+      interval: 30s
+      timeout: 5s
+      start_period: 15m
+      retries: 3
+
+volumes:
+  open-webui-data:
+  huggingface-cache:
