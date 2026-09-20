@@ -15,6 +15,12 @@ services:
       WEBUI_ADMIN_EMAIL: ${WEBUI_ADMIN_EMAIL:-admin@example.invalid}
       WEBUI_ADMIN_PASSWORD: ${WEBUI_ADMIN_PASSWORD:-}
       WEBUI_AUTH: "true"
+      # The inference backend is selected in local/compose.env. Keep this
+      # authoritative so an old URL saved in the UI cannot override the mode.
+      ENABLE_PERSISTENT_CONFIG: "false"
+      # Set this to true for one restart to restore all ConfigVar values from
+      # Compose after a malformed value was saved in the Admin UI.
+      RESET_CONFIG_ON_START: ${RESET_CONFIG_ON_START:-false}
       ENABLE_SIGNUP: "false"
       ENABLE_OLLAMA_API: "false"
       ENABLE_OPENAI_API: "true"

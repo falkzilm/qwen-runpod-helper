@@ -72,6 +72,11 @@ der privaten Datei `local/compose.env` wird die Inferenzquelle gewählt:
 | `serverless` | `https://ENDPOINT_ID.api.runpod.ai/v1` | keiner |
 | `local` | demselben lokalen Serverless-vLLM-Image auf `worker:8000/v1` | GPU-Worker-Profil |
 
+Die Provider-Konfiguration wird in diesem lokalen Stack bewusst aus
+`local/compose.env` erzwungen. Änderungen der OpenAI-Verbindung im
+Open-WebUI-Adminbereich werden deshalb nicht über einen Neustart hinweg
+gespeichert; die Umschaltung erfolgt ausschließlich über `INFERENCE_MODE`.
+
 Einmalig die private Konfiguration und Schlüssel erzeugen:
 
 ```bash
