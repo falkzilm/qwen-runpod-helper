@@ -12,6 +12,8 @@ services:
       RUNPOD_API_KEY: ${RUNPOD_API_KEY:-}
       RUNPOD_API_BASE_URL: ${RUNPOD_API_BASE_URL:-}
       WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-}
+      WEBUI_ADMIN_EMAIL: ${WEBUI_ADMIN_EMAIL:-admin@example.invalid}
+      WEBUI_ADMIN_PASSWORD: ${WEBUI_ADMIN_PASSWORD:-}
       WEBUI_AUTH: "true"
       ENABLE_SIGNUP: "false"
       ENABLE_OLLAMA_API: "false"

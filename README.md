@@ -77,6 +77,10 @@ make local-init
 chmod 600 local/compose.env
 ```
 
+`make local-init` gibt ein einmaliges Open-WebUI-Admin-Passwort aus. Dieses
+direkt in den Passwortmanager übernehmen; Anmeldung erfolgt danach mit
+`admin@example.invalid`.
+
 Danach für den Serverless-Test `INFERENCE_MODE=serverless`,
 `RUNPOD_ENDPOINT_ID` und `RUNPOD_API_KEY` in `local/compose.env` setzen und
 die lokale UI starten:
