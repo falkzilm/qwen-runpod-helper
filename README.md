@@ -113,6 +113,12 @@ Container-IP, erscheinen weiterhin Treffer der anderen. Die fragilen
 Brave Search API Key als `BRAVE_SEARCH_API_KEY` in `local/compose.env` gesetzt
 und der Stack mit `make local-ui-up` neu gestartet werden.
 
+Die Web-Search-Capability und der Web-Search-Schalter sind über
+`DEFAULT_MODEL_METADATA` für alle Modelle voreingestellt; neue Chats bieten dem
+Modell dadurch direkt `search_web` an. Unter **Admin → Models** gespeicherte
+Einstellungen eines Modells haben Vorrang und müssen dort gegebenenfalls
+angepasst werden.
+
 In beiden Modi prüft derselbe CLI-Test den tatsächlichen OpenAI-kompatiblen
 Weg über `/v1/models` und `/v1/chat/completions`:
 
